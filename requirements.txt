@@ -1,0 +1,10 @@
+pandas
+numpy
+networkx
+tqdm
+joblib
+streamlit
+tk
+matplotlib
+scipy
+openpyxl      # để đọc file .xlsx
