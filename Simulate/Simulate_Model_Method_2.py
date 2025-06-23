@@ -1,10 +1,10 @@
-# ✅ Simulate_Model_Method_2.py — Mô hình cạnh tranh ngoài đa tác nhân tương thích với giao diện tkinter (tk_app)
-# ✅ Sử dụng 1 CPU, giao diện truyền tham số vào simulate()
+# ✅ Simulate_Model_Method_2.py — Bổ sung song song bằng joblib cho mô hình cạnh tranh ngoài đa tác nhân
 
 import os
 import networkx as nx
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed  # ✅ thêm thư viện chạy song song
 
 # ✅ B1: Đọc mạng từ file txt
 def import_network(file_path):
@@ -33,7 +33,6 @@ def build_adjacency(G, node_order):
     return A, neighbors, node_index
 
 # ✅ B3: Cập nhật trạng thái
-
 def update_states_multi_beta(x, A, neighbors, beta_indices, beta_weights, fixed_nodes, EPSILON, DELTA):
     n = len(x)
     x_new = x.copy()
@@ -46,7 +45,6 @@ def update_states_multi_beta(x, A, neighbors, beta_indices, beta_weights, fixed_
     return np.clip(x_new, -1000, 1000)
 
 # ✅ B4: Mô phỏng một lượt Beta lên target node
-
 def simulate_beta_on_target(G, beta_nodes, target_node, x_prev, alpha_idx, node_order, EPSILON, DELTA, MAX_ITER, TOL):
     all_nodes = node_order + [f"Beta{i}" for i in range(len(beta_nodes))]
     A, neighbors, node_index = build_adjacency(G, all_nodes)
@@ -79,33 +77,35 @@ def simulate_beta_on_target(G, beta_nodes, target_node, x_prev, alpha_idx, node_
     return x[:len(node_order)]
 
 # ✅ B5: Tổng hỗ trợ
-
 def compute_total_support(x_state, alpha_idx):
     return sum(1 if x > 0 else -1 if x < 0 else 0 for i, x in enumerate(x_state) if i != alpha_idx)
 
-# ✅ B6: Hàm simulate chính được gọi từ tkinter GUI
+# ✅ Tính ToS cho 1 node Alpha
+def simulate_one_alpha(alpha_node, G, node_order, node_index, EPSILON, DELTA, MAX_ITER, TOL, N_BETA):
+    alpha_idx = node_index[alpha_node]
+    x_state = np.zeros(len(node_order))
+    x_state[alpha_idx] = 1
+
+    for i in range(0, len(node_order), N_BETA):
+        beta_nodes = node_order[i:i + N_BETA]
+        if alpha_node in beta_nodes:
+            continue
+        x_state = simulate_beta_on_target(G, beta_nodes, beta_nodes[0], x_state, alpha_idx, node_order, EPSILON, DELTA, MAX_ITER, TOL)
+
+    support = compute_total_support(x_state, alpha_idx)
+    return {"Alpha_Node": alpha_node, "Total_Support": support}
+
+# ✅ Hàm simulate chính
 
 def simulate(file_path, EPSILON, DELTA, MAX_ITER, TOL, N_BETA, output_folder=None):
     G = import_network(file_path)
     node_order = list(G.nodes())
     A, neighbors, node_index = build_adjacency(G, node_order)
-    n = len(node_order)
-    results = []
 
-    for alpha_node in node_order:
-        alpha_idx = node_index[alpha_node]
-        x_state = np.zeros(n)
-        x_state[alpha_idx] = 1
-
-        for i in range(0, len(node_order), N_BETA):
-            beta_nodes = node_order[i:i + N_BETA]
-            if alpha_node in beta_nodes:
-                continue
-            x_state = simulate_beta_on_target(G, beta_nodes, beta_nodes[0], x_state, alpha_idx, node_order, EPSILON, DELTA, MAX_ITER, TOL)
-
-        support = compute_total_support(x_state, alpha_idx)
-        results.append({"Alpha_Node": alpha_node, "Total_Support": support})
-
+    results = Parallel(n_jobs=-1)(
+        delayed(simulate_one_alpha)(alpha, G, node_order, node_index, EPSILON, DELTA, MAX_ITER, TOL, N_BETA)
+        for alpha in node_order
+    )
     return pd.DataFrame(results)
 
 # ✅ Dùng thử độc lập
