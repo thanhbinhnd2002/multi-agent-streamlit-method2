@@ -1,10 +1,11 @@
-# ✅ Simulate_Model_Method_2.py — Bổ sung song song bằng joblib cho mô hình cạnh tranh ngoài đa tác nhân
+# ✅ Simulate_Model_Method_2.py — Mô hình cạnh tranh ngoài đa tác nhân có song song hóa cho giao diện streamlit
+# ✅ Sử dụng joblib.Parallel để tận dụng đa lõi CPU
 
 import os
 import networkx as nx
 import numpy as np
 import pandas as pd
-from joblib import Parallel, delayed  # ✅ thêm thư viện chạy song song
+from joblib import Parallel, delayed
 
 # ✅ B1: Đọc mạng từ file txt
 def import_network(file_path):
@@ -80,7 +81,7 @@ def simulate_beta_on_target(G, beta_nodes, target_node, x_prev, alpha_idx, node_
 def compute_total_support(x_state, alpha_idx):
     return sum(1 if x > 0 else -1 if x < 0 else 0 for i, x in enumerate(x_state) if i != alpha_idx)
 
-# ✅ Tính ToS cho 1 node Alpha
+# ✅ B6: Mô phỏng cho 1 alpha node
 def simulate_one_alpha(alpha_node, G, node_order, node_index, EPSILON, DELTA, MAX_ITER, TOL, N_BETA):
     alpha_idx = node_index[alpha_node]
     x_state = np.zeros(len(node_order))
@@ -95,8 +96,7 @@ def simulate_one_alpha(alpha_node, G, node_order, node_index, EPSILON, DELTA, MA
     support = compute_total_support(x_state, alpha_idx)
     return {"Alpha_Node": alpha_node, "Total_Support": support}
 
-# ✅ Hàm simulate chính
-
+# ✅ B7: Hàm simulate chính gọi từ giao diện Streamlit
 def simulate(file_path, EPSILON, DELTA, MAX_ITER, TOL, N_BETA, output_folder=None):
     G = import_network(file_path)
     node_order = list(G.nodes())
