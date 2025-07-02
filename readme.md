@@ -1,91 +1,151 @@
-# 🧬 Multi-agent Outside Competitive Dynamics Model — Method 2
+# 🔬 Multi-agent Outside Competitive Dynamics Model — Streamlit Interface
 
-This repository provides an interactive simulation interface for the **Outside Competitive Dynamics Model** (Multi-agent version), using **Streamlit** for visualization and analysis of cancer gene networks.
-
-## 📌 Key Features
-- Upload your custom gene regulatory network in `.txt` format.
-- Configure simulation parameters: epsilon, delta, number of betas, etc.
-- Run simulations using the multi-agent competitive dynamics model.
-- Match top predicted genes with **OncoKB** and **PubMed** datasets.
-- Download results and matched gene data.
-- Visualize network structure interactively.
+This project simulates external competitive dynamics on biological gene networks using a Streamlit UI. It's designed for analyzing potential gene targets through competitive multi-agent simulation and matching with biological databases.
 
 ---
 
-## 📁 Folder Structure
+## 📆 Features
+
+* Upload custom gene regulatory network `.txt`
+* Run simulation with configurable parameters (`epsilon`, `delta`, `N_BETA`, etc.)
+* Visualize network structure interactively
+* Match results with **OncoKB** and **PubMed**
+* Download simulation and matched results as `.csv`
+* Temporary files cleaned up after use
+
+---
+
+## 📁 File Structure
+
 ```
 App/
-├── Streamlit_UI.py             # Streamlit-based web interface
-├── Temp_Upload/                # Temporary files (auto-deleted after each run)
+├── UI.py                 # Streamlit interface (this file)
 Simulate/
-├── Simulate_Model_Method_2.py # Core model implementation (multi-agent dynamics)
+├── Simulate_Model.py     # Core simulation model
 functions/
-├── Compare.py                  # Matching results with OncoKB & PubMed
-...
+├── Compare.py            # Gene matching (OncoKB / PubMed)
 ```
 
 ---
 
 ## ⚙️ Installation
+
+### 📥 Install Anaconda
+
+1. Visit the official Anaconda download page: [https://www.anaconda.com/products/distribution](https://www.anaconda.com/products/distribution)
+2. Download the installer for your operating system (Windows/macOS/Linux)
+3. Run the installer:
+
+   * On **Windows**, make sure to **check** the option: *Add Anaconda to my PATH environment variable*
+   * On **macOS/Linux**, follow the terminal instructions
+4. Open a terminal (or Anaconda Prompt) and verify installation:
+
 ```bash
-# Clone the repository
-https://github.com/thanhbinhnd2002/multi-agent-streamlit-method2.git
-cd multi-agent-streamlit-method2
+conda --version
+```
 
-# Recommended: create virtual environment
-conda create -n multi_beta_env python=3.8
-conda activate multi_beta_env
+### Step 1: Clone the repository
 
-# Install dependencies
+```bash
+https://github.com/yourusername/multi-agent-competition-model.git
+cd multi-agent-competition-model
+```
+
+### Step 2: Setup environment (recommended with Anaconda)
+
+```bash
+conda create -n beta_env python=3.8
+conda activate beta_env
+```
+
+> If you don't want to install full Anaconda, you can also use **Miniconda**: [https://docs.conda.io/en/latest/miniconda.html](https://docs.conda.io/en/latest/miniconda.html)
+
+### Step 3: Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-> **Note**: You may need to install `joblib`, `networkx`, `matplotlib`, `streamlit`, `pandas`, `openpyxl` manually if not included.
+#### ⚠️ Windows users: fix `UnicodeDecodeError`
+
+If you encounter:
+
+```
+UnicodeDecodeError: 'charmap' codec can't decode byte...
+```
+
+Fix:
+
+* Open `requirements.txt` with Notepad++ / VSCode
+* Save as `UTF-8 with BOM`
+* Try running `pip install` again
+
+### Optional: Create requirements file from current env (developer use)
+
+```bash
+pip freeze > requirements.txt
+```
 
 ---
 
-## 🚀 Usage
+## 🚀 Run Application
+
 ```bash
 cd App
 streamlit run Streamlit_UI.py
 ```
 
-Then open your browser at: [http://localhost:8501](http://localhost:8501)
-
-### Step-by-step Workflow
-1. **Upload** a `.txt` file containing the gene regulatory network (see format below).
-2. **Adjust** parameters (epsilon, delta, N_BETA, tolerance).
-3. Click **Run Simulation**.
-4. View the result table and download if needed.
-5. Click **Match with OncoKB / PubMed** for validation.
-6. Click **Draw Network** to visualize the uploaded graph.
+Then open: [http://localhost:8501](http://localhost:8501)
 
 ---
 
 ## 📄 Input Format
-Each line in the input `.txt` network file (excluding header) should follow:
+
+Upload a **tab-separated** `.txt` file with the following columns:
+
 ```
-source_node\ttarget_node\tdirection\tweight
+source\ttarget\tdirection\tweight
 ```
-- `direction = 1`: one-way edge from source to target
-- `direction = 0`: bidirectional edge
+
+* `direction`: 0 = bidirectional, 1 = one-way edge
 
 **Example:**
+
 ```
-from	target	direction	weight
-A	B	1	0.7
-B	C	0	1.0
+A\tB\t1\t0.8
+B\tC\t0\t1.0
 ```
 
 ---
 
-## 🧹 Cleanup
-- All uploaded files are saved temporarily in `Temp_Upload/`.
-- This folder is automatically deleted after each simulation for safety.
+## 🧼 Parameters
+
+* **Epsilon (ε):** strength of internal propagation
+* **Delta (δ):** external Beta force
+* **N\_BETA:** number of Beta nodes added
+* **Max Iter / Tolerance:** convergence settings
 
 ---
 
-## 📬 Contact & Credits
-Developed by [Phạm Thành Bình](https://github.com/thanhbinhnd2002) at HUST — supervised by **Thầy Phạm Văn Hải**.
+## 🧬 Biological Matching
 
-For feedback or contributions, feel free to open an issue or pull request.
+Uses `functions/Compare.py` to cross-reference top predicted genes with:
+
+* **OncoKB**: Cancer gene knowledge base
+* **PubMed**: Clinical gene publication evidence
+
+---
+
+## 📅 Output
+
+* Results shown in an interactive table on-screen
+* Downloadable as `.csv`
+* Includes matched results with OncoKB / PubMed
+
+---
+
+## 👤 Author
+
+Developed by **Phạm Thành Bình** @HUST. For academic and research use only.
+
+Contact: [https://github.com/thanhbinhnd2002](https://github.com/thanhbinhnd2002)
